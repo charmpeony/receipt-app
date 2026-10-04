@@ -1,30 +1,36 @@
-# レシート家計簿
+# レシート家計簿・画像補正版
 
-Streamlit app for uploading smartphone receipt photos, previewing them, and
-reading Japanese and English text using free, local Tesseract OCR. No OpenAI
-API, paid API, or API key is required.
+無料のTesseract OCRを使用します。OpenAI API・有料API・APIキーは不要です。
 
-## Use
+## 差し替え方法
 
-1. Open the app on your smartphone or computer and upload a JPEG or PNG photo.
-   Convert HEIC photos to JPEG first. Smartphone photo orientation is applied
-   automatically.
-2. Check the preview and select **文字を読み取る** to run OCR.
-3. Review and edit the text in **読み取り結果（編集できます）**.
-   Edits stay in the current Streamlit session. Running OCR again replaces them;
-   uploading a different receipt clears them. Text is not saved to a database.
+ZIPを解凍し、次の5ファイルをGitHubの既存リポジトリの一番上の階層にアップロードして上書きします。
 
-For best results, photograph a single receipt straight on in good light. OCR
-can misread dates and amounts, so check the result before using it.
+- streamlit_app.py
+- receipt_processing.py（新規）
+- requirements.txt
+- packages.txt
+- README.md
 
-## Streamlit Community Cloud
+Streamlitの起動ファイルは従来どおり `streamlit_app.py` です。
 
-Deploy this repository with `streamlit_app.py` as the entry point. Keep
-`requirements.txt` and `packages.txt` in the repository root. Community Cloud
-installs the Python dependencies and the Tesseract engine with Japanese and
-English language packs from these files. No secrets are needed.
+## 使い方
 
-## Run locally (Debian/Ubuntu)
+1. レシート1枚を撮影し、JPEG・PNGをアップロード。
+2. 自動で切り抜いた「読み取る範囲」を確認。
+3. 欠けている場合は「手動で範囲を調整」。横・縦の範囲をスライダーで調整。
+4. 横向き・逆さまなら「写真の向き」を変更。
+5. 「文字を読み取る」を押し、結果の日付・金額を確認して修正。
+
+白い紙の輪郭を検出し、遠近のゆがみを補正します。検出できなければ全体を使います。
+照明むらの補正、コントラスト調整、拡大、白黒化を行い、グレー画像と白黒画像の
+OCR結果を文字の信頼度で比較して採用します。信頼度は正しさを保証しません。
+2枚写っている場合は大きい方だけを選ぶ可能性があります。1枚ずつ読み取ってください。
+元の写真は変更しません。補正画像を外部OCR APIへ送信しません。
+結果は現在のStreamlitセッションに保持され、データベースには保存されません。
+新しい写真を選ぶと結果をクリアし、再読み取りは編集結果を上書きします。
+
+## ローカル実行（Debian/Ubuntu）
 
 ```bash
 sudo apt-get update
@@ -32,6 +38,3 @@ sudo apt-get install tesseract-ocr tesseract-ocr-jpn tesseract-ocr-eng
 python -m pip install -r requirements.txt
 streamlit run streamlit_app.py
 ```
-
-On other operating systems, install Tesseract and its `jpn` and `eng` language
-data with your package manager and ensure `tesseract` is on your PATH.
